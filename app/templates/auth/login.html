@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Log in</h1>
+<p class="caption">Use the college email registered against your roll number.</p>
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <label class="field">Email</label>
+  {{ form.email(autocomplete="username") }}
+  {% for e in form.email.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <label class="field">Password</label>
+  {{ form.password(autocomplete="current-password") }}
+  {% for e in form.password.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <p style="margin-top:1rem">{{ form.submit(class="btn btn-primary") }}</p>
+</form>
+<p class="caption">No account yet? <a href="{{ url_for('auth.register') }}">Create one</a>.</p>
+{% endblock %}

@@ -1,0 +1,29 @@
+# Minimum versions, not exact pins: exact pins broke on Python 3.13 (no psycopg
+# binary wheel for 3.2.1). Once your environment works, freeze it with
+#   pip freeze > requirements.lock.txt
+# and use the lock file when you need byte-identical installs.
+Flask>=3.0.3
+Flask-Login>=0.6.3
+Flask-WTF>=1.2.1
+Flask-SQLAlchemy>=3.1.1
+Flask-Migrate>=4.0.7
+SQLAlchemy>=2.0.34
+alembic>=1.13.2
+WTForms>=3.1.2
+psycopg[binary]>=3.2.2
+argon2-cffi>=23.1.0
+email-validator>=2.2.0
+python-dotenv>=1.0.1
+requests>=2.32.3
+pypdf>=4.3.1
+python-docx>=1.1.2
+pytest>=8.3.2
+pytest-cov>=5.0.0
+
+# Servers. gunicorn is Linux-only (imports fcntl) and is what Render uses.
+# waitress is the Windows-native equivalent for running locally.
+gunicorn>=22.0.0
+waitress>=3.0.0
+
+# Load testing, optional
+locust>=2.31.5

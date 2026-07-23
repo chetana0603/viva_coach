@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Create account</h1>
+<p class="caption">Your register number must already be on your teacher's eligible list,
+and the email must match that record.</p>
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <label class="field">Register number</label>
+  {{ form.register_number() }}
+  {% for e in form.register_number.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <label class="field">College email</label>
+  {{ form.email(autocomplete="username") }}
+  {% for e in form.email.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <label class="field">Password</label>
+  {{ form.password(autocomplete="new-password") }}
+  <p class="caption">At least 10 characters, with a letter and a number.</p>
+  {% for e in form.password.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <label class="field">Confirm password</label>
+  {{ form.confirm(autocomplete="new-password") }}
+  {% for e in form.confirm.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  <p style="margin-top:1rem">{{ form.submit(class="btn btn-primary") }}</p>
+</form>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% set s = submission.status %}
+{% block content %}
+<h1>Project Viva — {{ exam.title }}</h1>
+<p class="caption">Submit your project report, study the cards the system builds from it,
+   then take an adaptive test grounded in your own work.</p>
+
+<div class="metric-row">
+  <div class="metric">
+    <div class="label">Step 1</div>
+    <div class="value" style="font-size:1rem">
+      {% if s in ['submitted','analysed','cards_ready','questions_ready'] %}✅ Report in{% else %}Report{% endif %}
+    </div>
+  </div>
+  <div class="metric">
+    <div class="label">Step 2</div>
+    <div class="value" style="font-size:1rem">
+      {% if s in ['analysed','cards_ready','questions_ready'] %}✅ Analysed{% else %}Concepts{% endif %}
+    </div>
+  </div>
+  <div class="metric">
+    <div class="label">Step 3</div>
+    <div class="value" style="font-size:1rem">
+      {% if s in ['cards_ready','questions_ready'] %}✅ Cards{% else %}Study cards{% endif %}
+    </div>
+  </div>
+  <div class="metric">
+    <div class="label">Step 4</div>
+    <div class="value" style="font-size:1rem">
+      {% if s == 'questions_ready' %}✅ Ready{% else %}Test{% endif %}
+    </div>
+  </div>
+</div>
+
+{% if s == 'failed' %}
+  <div class="alert alert-error"><span>❌</span><p>{{ submission.error_message }}</p></div>
+{% endif %}
+
+<div class="divider"></div>
+
+<!-- Step 1 -->
+<h3>1 · Your project report</h3>
+{% if s == 'draft' or s == 'failed' %}
+  <form method="post" action="{{ url_for('project.upload', exam_id=exam.id) }}"
+        enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field">Project title</label>
+    <input type="text" name="title" value="{{ submission.title or '' }}">
+    <label class="field">Report, code, or SQL files</label>
+    <input type="file" name="report" multiple
+           accept=".pdf,.docx,.txt,.md,.py,.java,.sql,.c,.cpp,.html,.css,.js">
+    <p class="caption">PDF, DOCX, or source files. You can add several.</p>
+    <label class="field">…or paste your report text</label>
+    <textarea name="typed_material" rows="6"></textarea>
+    <p style="margin-top:1rem"><button class="btn btn-primary">Submit report</button></p>
+  </form>
+{% else %}
+  <p>✅ <strong>{{ submission.title or 'Your project' }}</strong></p>
+  <p class="caption">{{ submission.source_filenames.replace('\n', ' · ') if submission.source_filenames }}
+     — {{ (submission.material or '')|length }} characters of material.</p>
+{% endif %}
+
+<!-- Step 2 -->
+{% if s in ['submitted','analysed','cards_ready','questions_ready'] %}
+  <div class="divider"></div>
+  <h3>2 · Concepts in your project</h3>
+  {% if s == 'submitted' %}
+    <p class="caption">The system reads your report and pulls out what a examiner would ask about.</p>
+    <form method="post" action="{{ url_for('project.analyse', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Analyse my report</button>
+    </form>
+  {% else %}
+    <p>{% for c in submission.concepts %}<span class="badge">{{ c }}</span> {% endfor %}</p>
+    {% if submission.technologies %}
+      <p class="caption">Detected technologies:
+        {% for t in submission.technologies %}<code>{{ t }}</code> {% endfor %}</p>
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+<!-- Step 3 -->
+{% if s in ['analysed','cards_ready','questions_ready'] %}
+  <div class="divider"></div>
+  <h3>3 · Study cards</h3>
+  {% if s == 'analysed' %}
+    <p class="caption">One card per concept — definition, purpose, where it's used, a strong
+       viva answer, and the misconception to avoid.</p>
+    <form method="post" action="{{ url_for('project.build_cards', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Build my study cards</button>
+    </form>
+  {% else %}
+    <p>{{ submission.cards|length }} cards ready
+       ({{ submission.cards|selectattr('viewed_at')|list|length }} read).</p>
+    <a class="btn" href="{{ url_for('project.cards', exam_id=exam.id) }}">Open study cards</a>
+  {% endif %}
+{% endif %}
+
+<!-- Step 4 -->
+{% if s in ['cards_ready','questions_ready'] %}
+  <div class="divider"></div>
+  <h3>4 · Your adaptive test</h3>
+  {% if s == 'cards_ready' %}
+    <div class="alert alert-info">
+      <span>ℹ️</span>
+      <p>Read your study cards first — the test is built to check what they taught you.
+         Generating takes a minute or two.</p>
+    </div>
+    <form method="post" action="{{ url_for('project.generate_pool', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Generate my test</button>
+    </form>
+  {% else %}
+    <div class="alert alert-success">
+      <span>✅</span>
+      <p>Your test is ready. It adapts as you go: answer well and it gets harder; miss one
+         and you get an easier follow-up on the same idea, worth partial credit.</p>
+    </div>
+    <details class="expander">
+      <summary>Question pool ({{ coverage.values()|map('sum')|sum if coverage else 0 }} total)</summary>
+      <table class="df">
+        <thead><tr><th>Concept</th><th>L0</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th></tr></thead>
+        <tbody>
+        {% for concept, levels in coverage.items() %}
+          <tr><td>{{ concept }}</td>
+          {% for l in range(6) %}<td>{{ levels.get(l, 0) }}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </details>
+    <a class="btn btn-primary" href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">
+      Go to the test</a>
+  {% endif %}
+{% endif %}
+
+<div class="divider"></div>
+<a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endblock %}

@@ -1,0 +1,331 @@
+/* --------------------------------------------------------------------------
+   app.css — reproduces the Streamlit light theme so the platform looks and
+   reads exactly like the prototype students already saw.
+
+   Streamlit tokens used:
+     primary       #FF4B4B
+     text          #31333F
+     background    #FFFFFF
+     sidebar       #F0F2F6
+     border        rgba(49, 51, 63, 0.2)
+     font          "Source Sans Pro"
+   -------------------------------------------------------------------------- */
+
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap");
+
+:root {
+  --primary: #ff4b4b;
+  --primary-dark: #d93b3b;
+  --text: #31333f;
+  --text-fade: rgba(49, 51, 63, 0.6);
+  --bg: #ffffff;
+  --sidebar-bg: #f0f2f6;
+  --border: rgba(49, 51, 63, 0.2);
+  --radius: 0.5rem;
+
+  --info-bg: rgba(28, 131, 225, 0.1);
+  --info-fg: #004280;
+  --success-bg: rgba(33, 195, 84, 0.1);
+  --success-fg: #177233;
+  --warning-bg: rgba(255, 227, 18, 0.1);
+  --warning-fg: #926c05;
+  --error-bg: rgba(255, 43, 43, 0.09);
+  --error-fg: #7d353b;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .mono { font-family: "Source Code Pro", monospace; }
+
+code {
+  background: rgba(240, 242, 246, 0.9);
+  color: var(--primary);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+
+/* ---------------------------------------------------------------- layout */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 21rem;
+  flex: 0 0 21rem;
+  background: var(--sidebar-bg);
+  padding: 1.5rem 1.5rem 3rem;
+  overflow-y: auto;
+}
+
+.sidebar h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
+.sidebar h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 3rem 4rem 6rem;
+  max-width: 60rem;
+}
+
+.main.wide { max-width: 74rem; }
+
+@media (max-width: 900px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; flex: none; }
+  .main { padding: 1.5rem 1.25rem 4rem; }
+}
+
+/* ------------------------------------------------------------ typography */
+h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin: 0 0 1rem; }
+h2 { font-size: 1.75rem; font-weight: 600; margin: 1.75rem 0 0.75rem; }
+h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+h4 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 0.4rem; }
+
+.caption {
+  font-size: 0.875rem;
+  color: var(--text-fade);
+  line-height: 1.4;
+  margin: 0.25rem 0 0.75rem;
+}
+
+hr, .divider {
+  border: none;
+  border-top: 1px solid rgba(49, 51, 63, 0.15);
+  margin: 1.5rem 0;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --------------------------------------------------------------- alerts */
+.alert {
+  border-radius: var(--radius);
+  padding: 1rem 1rem 1rem 1rem;
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.alert-info    { background: var(--info-bg);    color: var(--info-fg); }
+.alert-success { background: var(--success-bg); color: var(--success-fg); }
+.alert-warning { background: var(--warning-bg); color: var(--warning-fg); }
+.alert-error   { background: var(--error-bg);   color: var(--error-fg); }
+.alert p { margin: 0; }
+
+/* -------------------------------------------------------------- buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 0.35rem 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms, background 120ms;
+  user-select: none;
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
+.btn:active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+
+.btn-block { width: 100%; }
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------- inputs */
+label.field { display: block; font-size: 0.875rem; margin: 0.75rem 0 0.25rem; }
+
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="datetime-local"], input[type="file"],
+select, textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--sidebar-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg);
+}
+textarea { min-height: 6rem; }
+
+.field-error { color: var(--error-fg); font-size: 0.8rem; }
+
+/* -------------------------------------------------------------- metrics */
+.metric-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; }
+.metric { flex: 1 1 8rem; min-width: 8rem; }
+.metric .label { font-size: 0.875rem; color: var(--text-fade); }
+.metric .value { font-size: 2.25rem; font-weight: 600; line-height: 1.2; }
+.metric .delta { font-size: 0.875rem; color: var(--text-fade); }
+
+/* ------------------------------------------------------------- progress */
+.progress {
+  height: 0.5rem;
+  background: var(--sidebar-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.5rem 0 1.5rem;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+/* ----------------------------------------------------------------- tabs */
+.tabs {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid rgba(49, 51, 63, 0.15);
+  margin: 1rem 0 1.5rem;
+}
+.tabs a {
+  padding: 0.4rem 0;
+  color: var(--text);
+  border-bottom: 2px solid transparent;
+  font-size: 1rem;
+}
+.tabs a:hover { color: var(--primary); text-decoration: none; }
+.tabs a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ---------------------------------------------------------------- radio */
+.radio-group { margin: 1rem 0 1.5rem; }
+.radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  cursor: pointer;
+}
+.radio input { accent-color: var(--primary); margin-top: 0.4rem; width: auto; }
+.radio span { flex: 1; }
+
+/* ---------------------------------------------------------------- table */
+table.df {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: 1px solid rgba(49, 51, 63, 0.12);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+table.df th {
+  background: var(--sidebar-bg);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-fade);
+  padding: 0.5rem 0.75rem;
+  white-space: nowrap;
+}
+table.df td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid rgba(49, 51, 63, 0.08);
+  vertical-align: top;
+}
+table.df tr:hover td { background: rgba(240, 242, 246, 0.5); }
+
+/* ------------------------------------------------------------ bar chart */
+.bars { margin: 0.5rem 0 1.5rem; }
+.bar-row { display: flex; align-items: center; gap: 0.75rem; margin: 0.35rem 0; }
+.bar-row .bar-label {
+  flex: 0 0 12rem;
+  font-size: 0.8rem;
+  color: var(--text-fade);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-row .bar-track { flex: 1; background: var(--sidebar-bg); border-radius: 0.15rem; height: 1.1rem; }
+.bar-row .bar-fill { height: 100%; background: var(--primary); border-radius: 0.15rem; }
+.bar-row .bar-value { flex: 0 0 3.5rem; font-size: 0.8rem; }
+
+/* -------------------------------------------------------------- columns */
+.cols { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.cols > * { flex: 1 1 0; min-width: 15rem; }
+
+/* ------------------------------------------------------------- expander */
+details.expander {
+  border: 1px solid rgba(49, 51, 63, 0.12);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  margin: 0.75rem 0;
+}
+details.expander summary { cursor: pointer; font-weight: 600; list-style: none; }
+details.expander summary::-webkit-details-marker { display: none; }
+details.expander summary::before { content: "▸ "; color: var(--text-fade); }
+details.expander[open] summary::before { content: "▾ "; }
+
+/* ---------------------------------------------------------- exam header */
+.exam-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(49, 51, 63, 0.15);
+  padding: 0.75rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.timer {
+  font-family: "Source Code Pro", monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.1rem 0.6rem;
+  border-radius: var(--radius);
+  background: var(--sidebar-bg);
+}
+.timer.warn { background: var(--warning-bg); color: var(--warning-fg); }
+.timer.danger { background: var(--error-bg); color: var(--error-fg); }
+
+.save-state { font-size: 0.8rem; color: var(--text-fade); }
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--sidebar-bg);
+  color: var(--text-fade);
+}
+.badge-ok { background: var(--success-bg); color: var(--success-fg); }
+.badge-bad { background: var(--error-bg); color: var(--error-fg); }
+.badge-wait { background: var(--warning-bg); color: var(--warning-fg); }
+
+.option-note { color: var(--text-fade); font-size: 0.9rem; margin: 0 0 0.5rem 1.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% set rd = report.readiness %}
+
+{% block content %}
+<h1>📊 Analytics Dashboard &amp; Report</h1>
+<p class="caption">
+  {{ exam.title }} — {{ attempt.user.full_name }} ({{ attempt.user.register_number }})
+  · submitted {{ attempt.submitted_at|ist }}
+</p>
+
+{% if teacher_view %}
+<div class="alert alert-info"><span>ℹ️</span><p>Teacher view. Everything below is computed from the saved responses in the database.</p></div>
+{% endif %}
+
+{% if report.points and report.points.remedial_total %}
+<h3>Score</h3>
+<div class="metric-row">
+  <div class="metric">
+    <div class="label">Score (first attempt)</div>
+    <div class="value">{{ report.score_percent }}%</div>
+    <div class="delta">{{ report.points.primary_correct }}/{{ report.points.primary_total }} right first time</div>
+  </div>
+  <div class="metric">
+    <div class="label">With recovery credit</div>
+    <div class="value">{{ report.credited_percent }}%</div>
+    <div class="delta">+{{ report.points.recovery_points }} pts from {{ report.points.remedial_correct }}/{{ report.points.remedial_total }} remedials</div>
+  </div>
+  <div class="metric"></div><div class="metric"></div>
+</div>
+<p class="caption">
+  A remedial answered correctly earns 0.25. The first-attempt score is the one compared
+  against your pre-test, since that test had no second chances.
+</p>
+<div class="divider"></div>
+{% endif %}
+
+<h3>Student Readiness</h3>
+<div class="metric-row">
+  <div class="metric">
+    <div class="label">Readiness Score</div>
+    <div class="value">{{ rd.score }}%</div>
+    <div class="delta">{{ rd.label }}</div>
+  </div>
+  <div class="metric">
+    <div class="label">Correct / Total</div>
+    <div class="value">{{ rd.correct }} / {{ rd.total }}</div>
+  </div>
+  <div class="metric">
+    <div class="label">Highest Level</div>
+    <div class="value" style="font-size:1.5rem">L{{ rd.highest_level }}</div>
+    <div class="delta">{{ report.level_accuracy.get(rd.highest_level, {}).get('name', '') }}</div>
+  </div>
+  <div class="metric">
+    <div class="label">Avg Response Time</div>
+    <div class="value">{{ rd.avg_response_time }}s</div>
+  </div>
+</div>
+<div class="metric-row">
+  <div class="metric"><div class="label">Accuracy</div><div class="value">{{ rd.accuracy }}%</div></div>
+  <div class="metric"><div class="label">Integrity Flags</div><div class="value">{{ integrity.total }}</div></div>
+  <div class="metric"></div><div class="metric"></div>
+</div>
+<div class="progress"><span style="width: {{ rd.score }}%"></span></div>
+
+<div class="divider"></div>
+
+<div class="cols">
+  <div>
+    <h3>Level-wise Accuracy</h3>
+    {% if report.level_accuracy %}
+      <div class="bars">
+        {% for lvl, d in report.level_accuracy | dictsort %}
+          <div class="bar-row">
+            <div class="bar-label">L{{ lvl }} {{ d.name }}</div>
+            <div class="bar-track"><div class="bar-fill" style="width: {{ d.accuracy }}%"></div></div>
+            <div class="bar-value">{{ d.accuracy }}%</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="caption">No level data yet.</p>
+    {% endif %}
+  </div>
+
+  <div>
+    <h3>Concept Mastery</h3>
+    <div class="bars">
+      {% for m in report.concept.mastery %}
+        <div class="bar-row">
+          <div class="bar-label" title="{{ m.concept }}">{{ m.concept }}</div>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ m.accuracy }}%"></div></div>
+          <div class="bar-value">{{ m.accuracy }}%</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="cols">
+  <div>
+    <h4>💪 Strong concepts</h4>
+    <p>{{ report.concept.strong | join(', ') if report.concept.strong else '_None yet_' }}</p>
+  </div>
+  <div>
+    <h4>📉 Weak concepts</h4>
+    <p>{{ report.concept.weak | join(', ') if report.concept.weak else '_None yet_' }}</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<h3>Adaptive Level Movement</h3>
+<ul>
+  {% for step in report.trace %}<li>{{ step }}</li>{% endfor %}
+</ul>
+
+<h3>Historical Question Trace</h3>
+<table class="df">
+  <thead>
+    <tr><th>Concept</th><th>Level</th><th>Question</th><th>Your Answer</th>
+        <th>Correct</th><th>Points</th><th>Time (s)</th><th>Flags</th></tr>
+  </thead>
+  <tbody>
+  {% for r in report.records %}
+    <tr>
+      <td>{{ r.concept }}{% if r.is_remedial %} <span class="badge">remedial</span>{% endif %}</td>
+      <td>L{{ r.level }}</td>
+      <td>{{ r.question[:60] }}{{ '...' if r.question|length > 60 }}</td>
+      <td>{{ r.selected_text[:30] }}</td>
+      <td>{{ '✅' if r.is_correct else '❌' }}</td>
+      <td>{{ r.points }}</td>
+      <td>{{ r.response_time }}</td>
+      <td>{{ r.integrity_flags | length }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if show_answers %}
+<div class="divider"></div>
+<h3>💡 Comprehensive Learning Breakdown</h3>
+<p class="caption">Answers and explanations are released only after submission.</p>
+
+{% for r in report.records %}
+  <details class="expander" {% if not r.is_correct %}open{% endif %}>
+    <summary>Q{{ loop.index }} · L{{ r.level }} · {{ '✅' if r.is_correct else '❌' }} {{ r.question[:80] }}{{ '...' if r.question|length > 80 }}</summary>
+
+    <h4>{{ r.question }}</h4>
+    {% if r.is_correct %}
+      <div class="alert alert-success"><span>✅</span><p>Correct.</p></div>
+    {% else %}
+      <div class="alert alert-error"><span>❌</span><p>Incorrect. Correct answer: <strong>{{ r.correct_text }}</strong></p></div>
+    {% endif %}
+
+    <div class="alert alert-info"><span>ℹ️</span><p><strong>Core Summary:</strong> {{ r.explanation }}</p></div>
+
+    <h4>🔬 Breakdown of all choices</h4>
+    {% for opt in r.options %}
+      {% set i = loop.index0 %}
+      <p style="margin:0.4rem 0 0">
+        {% if i == r.answer %}🟢 <strong>[CORRECT ANSWER]</strong>
+        {% elif i == r.selected %}🔴 <strong>[YOUR SELECTION]</strong>
+        {% else %}⚪{% endif %}
+        <em>{{ opt }}</em>
+      </p>
+      <p class="option-note">↳ {{ r.options_breakdown.get(i) or 'No per-option note was authored for this question.' }}</p>
+    {% endfor %}
+  </details>
+{% endfor %}
+{% endif %}
+
+<div class="divider"></div>
+<h3>🧑‍🏫 Teacher Review Console</h3>
+
+<h4>Suggested follow-up questions</h4>
+<ul>
+  {% for q in report.followups %}<li>{{ q }}</li>{% endfor %}
+</ul>
+
+<h4>Integrity caution</h4>
+{% if integrity.total == 0 %}
+  <div class="alert alert-success"><span>✅</span><p>No integrity concerns detected.</p></div>
+{% else %}
+  <div class="alert alert-warning">
+    <span>⚠️</span>
+    <p>{{ integrity.total }} integrity signal(s) for teacher review. These are review indicators, not conclusions.</p>
+  </div>
+  <ul>
+    {% for reason, count in integrity.reasons.items() %}<li>{{ reason }} ×{{ count }}</li>{% endfor %}
+  </ul>
+{% endif %}
+
+<div class="divider"></div>
+{% if teacher_view %}
+  <a class="btn" href="{{ url_for('teacher.exam_attempts', exam_id=exam.id) }}">Back to results</a>
+{% else %}
+  <a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endif %}
+{% endblock %}

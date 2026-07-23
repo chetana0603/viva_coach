@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Edit exam' if exam else 'Create exam' }}</h1>
+<p class="caption">All times are entered and shown in IST. They are stored in UTC.</p>
+
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <label class="field">{{ form.exam_kind.label.text }}</label>
+  {{ form.exam_kind() }}
+  <p class="caption">Pre-test and post-test both draw on the approved subject bank and are
+     what the evaluation compares. Project viva runs on the student's own report.</p>
+
+  {% for field in [form.title, form.subject, form.description, form.instructions] %}
+    <label class="field">{{ field.label.text }}</label>
+    {{ field() }}
+    {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  {% endfor %}
+
+  <div class="divider"></div>
+  <h3>Windows</h3>
+  <div class="cols">
+    {% for field in [form.registration_start, form.registration_end] %}
+      <div>
+        <label class="field">{{ field.label.text }}</label>
+        {{ field(value=to_local_input(field.data) if field.data else '') }}
+        {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="cols">
+    {% for field in [form.exam_start, form.exam_end] %}
+      <div>
+        <label class="field">{{ field.label.text }}</label>
+        {{ field(value=to_local_input(field.data) if field.data else '') }}
+        {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="divider"></div>
+  <h3>Attempt rules</h3>
+  <div class="cols">
+    <div><label class="field">{{ form.duration_minutes.label.text }}</label>{{ form.duration_minutes() }}</div>
+    <div><label class="field">{{ form.question_count.label.text }}</label>{{ form.question_count() }}</div>
+  </div>
+  <div class="cols">
+    <div><label class="field">{{ form.starting_level.label.text }}</label>{{ form.starting_level() }}</div>
+    <div><label class="field">{{ form.max_level.label.text }}</label>{{ form.max_level() }}</div>
+  </div>
+  <p><label class="radio">{{ form.allow_late_start() }}<span>{{ form.allow_late_start.label.text }}</span></label></p>
+  <p><label class="radio">{{ form.show_result_immediately() }}<span>{{ form.show_result_immediately.label.text }}</span></label></p>
+  <p><label class="radio">{{ form.show_inline_feedback() }}<span>{{ form.show_inline_feedback.label.text }}</span></label></p>
+  <p class="caption">{{ form.show_inline_feedback.description }}</p>
+
+  <label class="field">{{ form.study_group.label.text }}</label>
+  {{ form.study_group() }}
+  <p class="caption">{{ form.study_group.description }}</p>
+
+  <label class="field">{{ form.status.label.text }}</label>{{ form.status() }}
+
+  <p style="margin-top:1.5rem">{{ form.submit(class="btn btn-primary") }}</p>
+</form>
+{% endblock %}

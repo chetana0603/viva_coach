@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Results — {{ exam.title }}</h1>
+<p class="caption">{{ rows|length }} attempts. Every figure is computed from saved responses.</p>
+<p><a class="btn" href="{{ url_for('teacher.export_csv', exam_id=exam.id) }}">Export CSV</a></p>
+
+<table class="df">
+  <thead>
+    <tr><th>Register number</th><th>Name</th><th>Status</th><th>Answered</th><th>Correct</th>
+        <th>Score</th><th>Readiness</th><th>Flags</th><th>Submitted</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for row in rows %}
+    {% set a = row.attempt %}
+    <tr>
+      <td>{{ a.user.register_number }}</td>
+      <td>{{ a.user.full_name }}</td>
+      <td><span class="badge {{ 'badge-ok' if a.status == 'submitted' else 'badge-wait' }}">{{ a.status }}</span></td>
+      <td>{{ a.total_answered }}</td>
+      <td>{{ a.correct_count }}</td>
+      <td>{{ a.score if a.score is not none else '—' }}%</td>
+      <td>{{ a.readiness_score if a.readiness_score is not none else '—' }}</td>
+      <td>{{ row.integrity.total }}</td>
+      <td>{{ a.submitted_at|ist }}</td>
+      <td>
+        <a href="{{ url_for('teacher.attempt_detail', attempt_id=a.id) }}">Open</a>
+        <form method="post" action="{{ url_for('teacher.attempt_action', attempt_id=a.id, action='invalidate') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn" style="padding:0 0.4rem">Invalidate</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="10">No attempts yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

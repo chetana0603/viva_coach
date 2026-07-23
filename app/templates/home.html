@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>AI-Based Adaptive Viva Preparation Engine</h1>
+<p class="caption">Learn Mode · Practice Mode · Report Mode — grounded in your own material</p>
+<div class="alert alert-info">
+  <span>ℹ️</span>
+  <p>Log in with your college email to see your scheduled vivas. If you do not have an
+     account yet, create one using the register number your teacher added to the roster.</p>
+</div>
+<div class="cols">
+  <a class="btn btn-primary btn-block" href="{{ url_for('auth.login') }}">Log in</a>
+  <a class="btn btn-block" href="{{ url_for('auth.register') }}">Create account</a>
+</div>
+{% endblock %}

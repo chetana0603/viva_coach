@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Question bank</h1>
+<p class="caption">Only approved questions are served during an assessment.</p>
+
+<div class="tabs">
+  {% for s in ['generated', 'approved', 'draft', 'rejected', 'archived'] %}
+    <a class="{{ 'active' if status == s }}"
+       href="{{ url_for('teacher.questions', status=s, subject=subject) }}">
+      {{ s }} ({{ counts[s] }})
+    </a>
+  {% endfor %}
+</div>
+
+{% for q in items %}
+  <details class="expander">
+    <summary>
+      <span class="badge">{{ q.subject }}</span>
+      <span class="badge">L{{ q.level }}</span>
+      <span class="badge">{{ q.generation_method }}</span>
+      {{ q.question_text[:90] }}{{ '...' if q.question_text|length > 90 }}
+    </summary>
+    <p class="caption">{{ q.concept.name }}</p>
+    <ol type="A">
+      {% for opt in q.options_list() %}
+        <li>{{ opt }} {% if loop.index0 == q.correct_index() %}<span class="badge badge-ok">correct</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
+    <div class="alert alert-info"><span>ℹ️</span><p>{{ q.explanation }}</p></div>
+    {% if status != 'approved' %}
+      <form method="post" action="{{ url_for('teacher.question_action', question_id=q.id, action='approve') }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary">Approve</button>
+      </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('teacher.question_action', question_id=q.id, action='reject') }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn">Reject</button>
+    </form>
+    <form method="post" action="{{ url_for('teacher.question_action', question_id=q.id, action='archive') }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn">Archive</button>
+    </form>
+  </details>
+{% else %}
+  <div class="alert alert-info"><span>ℹ️</span><p>No questions with status "{{ status }}".
+    Run <code>python scripts/seed_questions.py</code> to import the offline bank, or
+    <code>python scripts/generate_questions.py</code> to draft new ones with Groq.</p></div>
+{% endfor %}
+{% endblock %}

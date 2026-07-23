@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Teacher dashboard</h1>
+<p class="caption">Accounts, question bank, exams, and results.</p>
+
+<div class="metric-row">
+  <div class="metric"><div class="label">Students</div><div class="value">{{ stats.students }}</div>
+    <div class="delta">{{ stats.pending_accounts }} awaiting approval</div></div>
+  <div class="metric"><div class="label">Exams</div><div class="value">{{ stats.exams }}</div></div>
+  <div class="metric"><div class="label">Approved questions</div><div class="value">{{ stats.approved_questions }}</div>
+    <div class="delta">{{ stats.pending_questions }} awaiting review</div></div>
+  <div class="metric"><div class="label">Attempts</div><div class="value">{{ stats.attempts }}</div></div>
+</div>
+
+<div class="divider"></div>
+<h3>Recent exams</h3>
+<table class="df">
+  <thead><tr><th>Title</th><th>Subject</th><th>Window</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for e in exams %}
+    <tr>
+      <td>{{ e.title }}</td>
+      <td>{{ e.subject }}</td>
+      <td>{{ e.exam_start|ist }} → {{ e.exam_end|ist }}</td>
+      <td><span class="badge">{{ e.status }}</span></td>
+      <td>
+        <a href="{{ url_for('teacher.exam_blueprint', exam_id=e.id) }}">Blueprint</a> ·
+        <a href="{{ url_for('teacher.exam_attempts', exam_id=e.id) }}">Results</a>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">No exams yet. <a href="{{ url_for('teacher.edit_exam') }}">Create one</a>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

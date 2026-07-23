@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>My exams</h1>
+<p class="caption">Registration status, exam window, and attempt status for every scheduled viva.</p>
+
+{% if not rows %}
+  <div class="alert alert-info"><span>ℹ️</span><p>No exams are scheduled yet. This page updates when your teacher publishes one.</p></div>
+{% endif %}
+
+{% for row in rows %}
+  {% set exam = row.exam %}
+  <div class="divider"></div>
+  <h3>{{ exam.title }}
+    <span class="badge">{{ exam.subject }}</span>
+    {% if exam.is_project() %}<span class="badge">project viva</span>
+    {% elif exam.teaches() %}<span class="badge badge-ok">with explanations</span>{% endif %}
+  </h3>
+  <p class="caption">{{ exam.description or "" }}</p>
+
+  <div class="metric-row">
+    <div class="metric"><div class="label">Opens</div><div class="value" style="font-size:1rem">{{ exam.exam_start|ist }}</div></div>
+    <div class="metric"><div class="label">Closes</div><div class="value" style="font-size:1rem">{{ exam.exam_end|ist }}</div></div>
+    <div class="metric"><div class="label">Duration</div><div class="value" style="font-size:1rem">{{ exam.duration_minutes }} min</div></div>
+    <div class="metric"><div class="label">Questions</div><div class="value" style="font-size:1rem">{{ exam.question_count }}</div></div>
+    <div class="metric">
+      <div class="label">Registration</div>
+      <div class="value" style="font-size:1rem">
+        {% if not row.registration %}<span class="badge">not registered</span>
+        {% elif row.registration.status == 'approved' %}<span class="badge badge-ok">approved</span>
+        {% elif row.registration.status == 'pending' %}<span class="badge badge-wait">pending</span>
+        {% else %}<span class="badge badge-bad">{{ row.registration.status }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if not row.registration and exam.registration_start <= now <= exam.registration_end %}
+    <form method="post" action="{{ url_for('student.register_for_exam', exam_id=exam.id) }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Register for this exam</button>
+    </form>
+  {% endif %}
+
+  {% if exam.is_project() %}
+    <a class="btn btn-primary" href="{{ url_for('project.overview', exam_id=exam.id) }}">
+      Project viva — submit &amp; study</a>
+  {% endif %}
+  <a class="btn" href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">Open exam page</a>
+
+  {% if row.attempt and row.attempt.status in ('submitted', 'expired') %}
+    <a class="btn" href="{{ url_for('student.result', attempt_id=row.attempt.id) }}">View result</a>
+  {% endif %}
+{% endfor %}
+{% endblock %}

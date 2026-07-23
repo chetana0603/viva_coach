@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Exam registrations</h1>
+<p class="caption">Approve a registration before the exam window opens. Students cannot start without it.</p>
+<table class="df">
+  <thead><tr><th>Student</th><th>Register number</th><th>Exam</th><th>Requested</th><th>Action</th></tr></thead>
+  <tbody>
+  {% for r in pending %}
+    <tr>
+      <td>{{ r.user.full_name }}</td>
+      <td>{{ r.user.register_number }}</td>
+      <td>{{ r.exam.title }}</td>
+      <td>{{ r.registered_at|ist }}</td>
+      <td>
+        <form method="post" action="{{ url_for('teacher.registration_action', reg_id=r.id, action='approve') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('teacher.registration_action', reg_id=r.id, action='reject') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">Reject</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">Nothing waiting.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

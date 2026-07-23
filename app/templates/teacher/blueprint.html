@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Concepts — {{ exam.title }}</h1>
+<p class="caption">
+  Pick which concepts this exam draws from. The adaptive engine chooses the
+  <em>level</em> from how the student is answering, so there is nothing to set per level.
+</p>
+
+{% if exam.is_project() %}
+  <div class="alert alert-info">
+    <span>ℹ️</span>
+    <p>This is a <strong>project viva</strong>. Its questions come from each student's own
+       project submission, not the shared bank, so concept selection here is only a
+       fallback if a student has no submission.</p>
+  </div>
+{% endif %}
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <label class="field">Questions per attempt</label>
+  <input type="number" name="question_count" min="1" max="60"
+         value="{{ exam.question_count }}" style="max-width:8rem">
+  <p class="caption">Remedial questions are extra — they don't eat into this count.</p>
+
+  <div class="divider"></div>
+  <h3>Concepts in scope</h3>
+
+  <table class="df">
+    <thead>
+      <tr><th style="width:3rem">Use</th><th>Concept</th><th>Approved</th>
+          {% for l in levels %}<th>L{{ l }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+    {% for c in concepts %}
+      {% set st = stock[c.id] %}
+      <tr>
+        <td><input type="checkbox" name="concept_ids" value="{{ c.id }}"
+                   {% if c.id in selected %}checked{% endif %} style="width:auto"></td>
+        <td>{{ c.name }}</td>
+        <td><strong>{{ st.total }}</strong></td>
+        {% for l in levels %}
+          {% set n = st.by_level.get(l, 0) %}
+          <td>{% if n %}{{ n }}{% else %}<span class="badge badge-bad">0</span>{% endif %}</td>
+        {% endfor %}
+      </tr>
+    {% else %}
+      <tr><td colspan="{{ 3 + levels|length }}">No concepts for {{ exam.subject }} yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="caption">
+    A <span class="badge badge-bad">0</span> means the adaptive climb dead-ends at that
+    level and the engine will fall back to the nearest level that has questions.
+  </p>
+
+  {% if selected_stock < exam.question_count %}
+    <div class="alert alert-warning">
+      <span>⚠️</span>
+      <p>The selected concepts hold <strong>{{ selected_stock }}</strong> approved questions
+         but the exam asks for <strong>{{ exam.question_count }}</strong>. The test will end
+         early once the pool runs out. Add questions or lower the count.</p>
+    </div>
+  {% elif selected_stock %}
+    <div class="alert alert-success">
+      <span>✅</span>
+      <p>{{ selected_stock }} approved questions available for {{ exam.question_count }} asked.</p>
+    </div>
+  {% endif %}
+
+  <p style="margin-top:1rem"><button class="btn btn-primary">Save concepts</button></p>
+</form>
+{% endblock %}
