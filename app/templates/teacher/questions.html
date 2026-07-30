@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Question bank</h1>
+<p class="caption">Only approved questions are served during a test. Decisions save
+instantly — no page reload.</p>
+
+<div class="tabs">
+  {% for s in ['generated', 'approved', 'draft', 'rejected', 'archived'] %}
+    <a class="{{ 'active' if status == s }}"
+       href="{{ url_for('teacher.questions', status=s, subject=subject) }}">
+      {{ s }} (<span data-count="{{ s }}">{{ counts[s] }}</span>)
+    </a>
+  {% endfor %}
+</div>
+
+{% for q in items %}
+  <details class="expander" id="question-{{ q.id }}" {% if status == 'generated' %}open{% endif %}>
+    <summary>
+      <span class="badge">{{ q.subject }}</span>
+      <span class="badge">L{{ q.level }}</span>
+      <span class="badge">{{ q.generation_method }}</span>
+      <span class="badge" data-status-badge style="display:none"></span>
+      {{ q.question_text[:90] }}{{ '...' if q.question_text|length > 90 }}
+    </summary>
+    <p class="caption">{{ q.concept.name }}</p>
+    <ol type="A">
+      {% for opt in q.options_list() %}
+        <li>{{ opt }} {% if loop.index0 == q.correct_index() %}<span class="badge badge-ok">correct</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
+    <div class="alert alert-info"><span>ℹ️</span><p>{{ q.explanation }}</p></div>
+
+    <div class="review-actions" data-question-id="{{ q.id }}">
+      {% if status != 'approved' %}
+        <button class="btn btn-primary" data-action="approve">✓ Approve</button>
+      {% endif %}
+      {% if status != 'rejected' %}
+        <button class="btn" data-action="reject">✗ Reject</button>
+      {% endif %}
+      <button class="btn" data-action="archive">Archive</button>
+      <span class="save-state" data-result></span>
+    </div>
+  </details>
+{% else %}
+  <div class="alert alert-info"><span>ℹ️</span><p>No questions with status "{{ status }}".</p></div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var csrf = "{{ csrf_token() }}";
+
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".review-actions button");
+    if (!button) return;
+    event.preventDefault();
+
+    var wrap = button.closest(".review-actions");
+    var card = button.closest("details");
+    var id = wrap.dataset.questionId;
+    var action = button.dataset.action;
+    var result = wrap.querySelector("[data-result]");
+
+    wrap.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+    result.textContent = "saving…";
+
+    fetch("/teacher/questions/" + id + "/" + action, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "X-CSRFToken": csrf, "X-Requested-With": "fetch" },
+    })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        // Mark, collapse, and fade the card; move straight to the next one.
+        var badge = card.querySelector("[data-status-badge]");
+        badge.textContent = data.status;
+        badge.style.display = "";
+        badge.className = "badge " + (data.status === "approved" ? "badge-ok" : "badge-bad");
+        card.open = false;
+        card.style.opacity = "0.45";
+        result.textContent = "";
+
+        Object.keys(data.counts).forEach(function (k) {
+          var el = document.querySelector('[data-count="' + k + '"]');
+          if (el) el.textContent = data.counts[k];
+        });
+
+        var next = card.nextElementSibling;
+        if (next && next.tagName === "DETAILS") {
+          next.open = true;
+          next.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      })
+      .catch(function () {
+        result.textContent = "failed — try again";
+        wrap.querySelectorAll("button").forEach(function (b) { b.disabled = false; });
+      });
+  });
+})();
+</script>
+{% endblock %}

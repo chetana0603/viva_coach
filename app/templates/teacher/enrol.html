@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Enrol students — {{ exam.title }}</h1>
+<p class="caption">Enrolled students are approved immediately — no waiting. Students can
+still self-register from their dashboard if you miss anyone.</p>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-primary" name="enrol_all" value="1"
+          onclick="return confirm('Enrol every active student on this exam?')">
+    Enrol ALL active students ({{ students|length }})
+  </button>
+</form>
+
+<div class="divider"></div>
+<h3>Or pick individually</h3>
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <table class="df">
+    <thead><tr><th style="width:3rem">Add</th><th>Register no.</th><th>Name</th>
+               <th>Email</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for u in students %}
+      <tr>
+        <td>
+          {% if u.id in enrolled_ids %}✅
+          {% else %}<input type="checkbox" name="user_ids" value="{{ u.id }}" style="width:auto">
+          {% endif %}
+        </td>
+        <td>{{ u.register_number }}</td>
+        <td>{{ u.full_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{% if u.id in enrolled_ids %}<span class="badge badge-ok">enrolled</span>
+            {% else %}<span class="badge">not enrolled</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p style="margin-top:1rem"><button class="btn btn-primary">Enrol selected</button></p>
+</form>
+{% endblock %}

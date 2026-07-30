@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% set s = submission.status %}
+{% block content %}
+<h1>Project Viva — {{ exam.title }}</h1>
+<p class="caption">Submit your project report; the system reads it, generates an adaptive
+test from it, and scores your understanding of your own work.</p>
+
+<div class="metric-row">
+  <div class="metric"><div class="label">Step 1</div>
+    <div class="value" style="font-size:1rem">{% if s != 'draft' and s != 'failed' %}✅ Report in{% else %}Report{% endif %}</div></div>
+  <div class="metric"><div class="label">Step 2</div>
+    <div class="value" style="font-size:1rem">{% if s in ['analysed','cards_ready','questions_ready'] %}✅ Analysed{% else %}Concepts{% endif %}</div></div>
+  <div class="metric"><div class="label">Step 3</div>
+    <div class="value" style="font-size:1rem">{% if s == 'questions_ready' %}✅ Ready{% else %}Test{% endif %}</div></div>
+</div>
+
+{% if s == 'failed' %}
+  <div class="alert alert-error"><span>❌</span><p>{{ submission.error_message }}</p></div>
+{% endif %}
+
+<div class="divider"></div>
+
+<h3>1 · Your project report</h3>
+{% if s == 'draft' or s == 'failed' %}
+  <form method="post" action="{{ url_for('project.upload', exam_id=exam.id) }}"
+        enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field">Project title</label>
+    <input type="text" name="title" value="{{ submission.title or '' }}">
+    <label class="field">Report, code, or SQL files</label>
+    <input type="file" name="report" multiple
+           accept=".pdf,.docx,.txt,.md,.py,.java,.sql,.c,.cpp,.html,.css,.js">
+    <label class="field">…or paste your report text</label>
+    <textarea name="typed_material" rows="6"></textarea>
+    <p style="margin-top:1rem"><button class="btn btn-primary">Submit report</button></p>
+  </form>
+{% else %}
+  <p>✅ <strong>{{ submission.title or 'Your project' }}</strong></p>
+  <p class="caption">{{ submission.source_filenames.replace('\n', ' · ') if submission.source_filenames }}
+     — {{ (submission.material or '')|length }} characters.</p>
+{% endif %}
+
+{% if s in ['submitted','analysed','cards_ready','questions_ready'] %}
+  <div class="divider"></div>
+  <h3>2 · Concepts found in your project</h3>
+  {% if s == 'submitted' %}
+    <form method="post" action="{{ url_for('project.analyse', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Analyse my report</button>
+    </form>
+  {% else %}
+    <p>{% for c in submission.concepts %}<span class="badge">{{ c }}</span> {% endfor %}</p>
+    {% if submission.technologies %}
+      <p class="caption">Technologies:
+        {% for t in submission.technologies %}<code>{{ t }}</code> {% endfor %}</p>
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% if s in ['analysed','cards_ready','questions_ready'] %}
+  <div class="divider"></div>
+  <h3>3 · Your adaptive test</h3>
+  {% if s != 'questions_ready' %}
+    <p class="caption">One click. Questions are generated from your report across difficulty
+       levels, screened automatically, and saved with explanations. Takes a minute or two.</p>
+    <form method="post" action="{{ url_for('project.generate_pool', exam_id=exam.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary">Generate my test questions</button>
+    </form>
+  {% else %}
+    <div class="alert alert-success"><span>✅</span>
+      <p>Your test is ready. It adapts as you answer; a wrong answer gets an easier
+         follow-up on the same idea, worth partial credit.</p></div>
+    <details class="expander">
+      <summary>Question pool by level</summary>
+      <table class="df">
+        <thead><tr><th>Concept</th>{% for l in range(6) %}<th>L{{ l }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for concept, levels in coverage.items() %}
+          <tr><td>{{ concept }}</td>
+          {% for l in range(6) %}<td>{{ levels.get(l, 0) }}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </details>
+    <a class="btn btn-primary" href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">Go to the test</a>
+  {% endif %}
+{% endif %}
+
+<div class="divider"></div>
+<a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endblock %}

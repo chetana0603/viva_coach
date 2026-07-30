@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>System evaluation</h1>
+<p class="caption">Pre-test (static baseline) vs post-test (adaptive, after the core system).</p>
+
+{% if groups %}
+<div class="tabs">
+  {% for g in groups %}
+    <a class="{{ 'active' if g == group }}" href="{{ url_for('teacher.evaluation', group=g) }}">{{ g }}</a>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="alert alert-info"><span>ℹ️</span>
+    <p>No study groups yet. Give a pre-test and a post-test the same
+       <strong>study group tag</strong> and they'll be paired here.</p></div>
+{% endif %}
+
+{% if data and data.error %}
+  <div class="alert alert-warning"><span>⚠️</span><p>{{ data.error }}</p></div>
+{% elif data %}
+
+  {% if data.summary %}
+  <h3>Aggregate</h3>
+  <div class="metric-row">
+    <div class="metric"><div class="label">Students (both tests)</div>
+      <div class="value">{{ data.summary.n }}</div>
+      {% if data.summary.n_partial %}<div class="delta">{{ data.summary.n_partial }} incomplete</div>{% endif %}</div>
+    <div class="metric"><div class="label">Mean score gain</div>
+      <div class="value">{{ '%+.1f'|format(data.summary.mean_score_gain) }}%</div></div>
+    <div class="metric"><div class="label">Mean readiness gain</div>
+      <div class="value">{{ '%+.1f'|format(data.summary.mean_readiness_gain) }}</div></div>
+    <div class="metric"><div class="label">Mean level gain</div>
+      <div class="value">{{ '%+.2f'|format(data.summary.mean_level_gain) }}</div></div>
+  </div>
+  <p class="caption">
+    Improved: <strong>{{ data.summary.improved }}</strong> ·
+    Unchanged: {{ data.summary.unchanged }} ·
+    Declined: {{ data.summary.declined }}
+  </p>
+
+  <div class="alert alert-info">
+    <span>ℹ️</span>
+    <p>Gains use the <strong>primary score</strong> — first-attempt questions only. The
+       post-test also offers remedial second chances worth 0.25, but the pre-test has no
+       such mechanic, so counting recovery credit in the comparison would create a gain
+       that isn't learning. Recovery is reported separately per student below.</p>
+  </div>
+  {% endif %}
+
+  <p><a class="btn" href="{{ url_for('teacher.evaluation_csv', group=group) }}">Export CSV</a></p>
+
+  <table class="df">
+    <thead>
+      <tr><th>Register no.</th><th>Name</th>
+          <th>Pre score</th><th>Post score</th><th>Gain</th>
+          <th>Pre readiness</th><th>Post readiness</th><th>Gain</th>
+          <th>Pre L</th><th>Post L</th>
+          <th>Recovery pts</th><th>Cards read</th></tr>
+    </thead>
+    <tbody>
+    {% for r in data.rows %}
+      <tr>
+        <td>{{ r.user.register_number }}</td>
+        <td>{{ r.user.full_name }}</td>
+        <td>{{ '%.1f'|format(r.pre.score_percent) ~ '%' if r.pre else '—' }}</td>
+        <td>{{ '%.1f'|format(r.post.score_percent) ~ '%' if r.post else '—' }}</td>
+        <td>{% if r.complete %}
+              <span class="badge {{ 'badge-ok' if r.score_gain > 0 else 'badge-bad' if r.score_gain < 0 }}">
+                {{ '%+.1f'|format(r.score_gain) }}</span>
+            {% else %}—{% endif %}</td>
+        <td>{{ r.pre.readiness.score if r.pre else '—' }}</td>
+        <td>{{ r.post.readiness.score if r.post else '—' }}</td>
+        <td>{% if r.complete %}
+              <span class="badge {{ 'badge-ok' if r.readiness_gain > 0 else 'badge-bad' if r.readiness_gain < 0 }}">
+                {{ '%+d'|format(r.readiness_gain) }}</span>
+            {% else %}—{% endif %}</td>
+        <td>{{ 'L' ~ r.pre.readiness.highest_level if r.pre else '—' }}</td>
+        <td>{{ 'L' ~ r.post.readiness.highest_level if r.post else '—' }}</td>
+        <td>{{ r.recovery if r.complete else '—' }}</td>
+        <td>{{ r.cards_read }}/{{ r.cards_total }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="12">No attempts yet in this study group.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="caption">
+    <strong>Reading this honestly.</strong> Both tests are adaptive and unproctored, and
+    every student takes them in a different order of conditions. With a group this size,
+    report the direction and size of the change and how many improved — not a significance
+    claim. There is no control group here, so this measures change within each student,
+    not that the system beats an alternative.
+  </p>
+{% endif %}
+{% endblock %}

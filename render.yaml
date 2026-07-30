@@ -1,0 +1,22 @@
+# Render blueprint. In the Render dashboard: New → Blueprint → point at this repo.
+# The database lives on Supabase (free, doesn't expire), so this only defines the web app.
+services:
+  - type: web
+    name: viva-platform
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    # gunicorn runs on Render's Linux hosts (the fcntl error only happens on Windows).
+    startCommand: "gunicorn --config deployment/gunicorn.conf.py wsgi:app"
+    healthCheckPath: /healthz
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true          # Render generates a strong one for you
+      - key: DATABASE_URL
+        sync: false                  # paste your Supabase POOLER string in the dashboard
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALLOWED_EMAIL_DOMAIN
+        value: ""
+      - key: PYTHON_VERSION
+        value: "3.12.6"

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Exams</h1>
+<p><a class="btn btn-primary" href="{{ url_for('teacher.edit_exam') }}">Create exam</a></p>
+<table class="df">
+  <thead><tr><th>Title</th><th>Subject</th><th>Registration</th><th>Exam window</th>
+             <th>Duration</th><th>Questions</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for e in exams %}
+    <tr>
+      <td>{{ e.title }}</td>
+      <td>{{ e.subject }}</td>
+      <td>{{ e.registration_start|ist }} → {{ e.registration_end|ist }}</td>
+      <td>{{ e.exam_start|ist }} → {{ e.exam_end|ist }}</td>
+      <td>{{ e.duration_minutes }} min</td>
+      <td>{{ e.question_count }}</td>
+      <td><span class="badge">{{ e.status }}</span></td>
+      <td>
+        <a href="{{ url_for('teacher.edit_exam', exam_id=e.id) }}">Edit</a> ·
+        <a href="{{ url_for('teacher.exam_blueprint', exam_id=e.id) }}">Concepts</a> ·
+        <a href="{{ url_for('teacher.enrol_students', exam_id=e.id) }}">Enrol</a> ·
+        <a href="{{ url_for('teacher.exam_attempts', exam_id=e.id) }}">Results</a>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8">No exams yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

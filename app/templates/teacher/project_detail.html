@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>{{ sub.title or 'Untitled project' }}</h1>
+<p class="caption">{{ sub.user.full_name }} ({{ sub.user.register_number }}) ·
+   submitted {{ sub.created_at|ist }} · status <span class="badge">{{ sub.status }}</span></p>
+
+<h3>Concepts extracted</h3>
+<p>{% for c in sub.concepts %}<span class="badge">{{ c }}</span> {% endfor %}</p>
+{% if sub.technologies %}
+  <p class="caption">Technologies: {% for t in sub.technologies %}<code>{{ t }}</code> {% endfor %}</p>
+{% endif %}
+
+{% if report %}
+<div class="divider"></div>
+<h3>Viva result</h3>
+<div class="metric-row">
+  <div class="metric"><div class="label">Score (first attempt)</div><div class="value">{{ report.score_percent }}%</div></div>
+  <div class="metric"><div class="label">With recovery credit</div><div class="value">{{ report.credited_percent }}%</div></div>
+  <div class="metric"><div class="label">Readiness</div><div class="value">{{ report.readiness.score }}</div></div>
+  <div class="metric"><div class="label">Highest level</div><div class="value">L{{ report.readiness.highest_level }}</div></div>
+</div>
+<p><a class="btn" href="{{ url_for('teacher.attempt_detail', attempt_id=attempt.id) }}">Full attempt report</a></p>
+{% elif attempt %}
+<div class="alert alert-info"><span>ℹ️</span><p>Attempt in progress ({{ attempt.status }}).</p></div>
+{% endif %}
+
+<div class="divider"></div>
+<h3>Generated question pool ({{ pool|length }})</h3>
+{% for q in pool %}
+  <details class="expander">
+    <summary><span class="badge">L{{ q.level }}</span> {{ q.question_text[:90] }}</summary>
+    <ol type="A">
+      {% for opt in q.options_list() %}
+        <li>{{ opt }} {% if loop.index0 == q.correct_index() %}<span class="badge badge-ok">correct</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
+    <div class="alert alert-info"><span>ℹ️</span><p>{{ q.explanation }}</p></div>
+  </details>
+{% endfor %}
+
+<div class="divider"></div>
+<h3>Submitted material</h3>
+<p class="caption">{{ sub.source_filenames.replace('\n', ' · ') if sub.source_filenames }}</p>
+<details class="expander">
+  <summary>View extracted text ({{ (sub.material or '')|length }} chars)</summary>
+  <p class="caption" style="white-space:pre-wrap">{{ (sub.material or '')[:8000] }}
+     {% if (sub.material or '')|length > 8000 %}… (truncated){% endif %}</p>
+</details>
+
+<a class="btn" href="{{ url_for('teacher.project_submissions') }}">Back to submissions</a>
+{% endblock %}

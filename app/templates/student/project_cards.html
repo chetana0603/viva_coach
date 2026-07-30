@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Study cards — {{ submission.title or exam.title }}</h1>
+<p class="caption">Built from your own report. Read these before the test.</p>
+
+{% for card in submission.cards %}
+  <details class="expander" {% if not card.viewed_at %}open{% endif %}>
+    <summary>{{ '✅' if card.viewed_at else '📖' }} {{ card.concept_name }}</summary>
+
+    <div class="cols">
+      <div>
+        <h4>📖 Definition</h4>
+        <p>{{ card.definition }}</p>
+        <h4>🎯 Purpose</h4>
+        <p>{{ card.purpose }}</p>
+        <h4>📍 Where it is used</h4>
+        <p>{{ card.where_used }}</p>
+      </div>
+      <div>
+        <h4>🗣️ Recommended viva answer</h4>
+        <div class="alert alert-success"><span>✅</span><p>{{ card.recommended_answer }}</p></div>
+        <h4>⚠️ Common misconception</h4>
+        <div class="alert alert-warning"><span>⚠️</span><p>{{ card.misconception }}</p></div>
+      </div>
+    </div>
+
+    {% if card.revision_points %}
+      <h4>⚡ Quick revision points</h4>
+      <ul>{% for p in card.revision_points %}<li>{{ p }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <details class="expander">
+      <summary>🔎 Retrieved context used</summary>
+      <p class="caption" style="white-space:pre-wrap">{{ card.retrieved_context or '(none)' }}</p>
+    </details>
+
+    <p class="caption">Source: {{ card.source }}</p>
+    {% if not card.viewed_at %}
+      <form method="post" action="{{ url_for('project.mark_viewed', exam_id=exam.id, card_id=card.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn">Mark as read</button>
+      </form>
+    {% endif %}
+  </details>
+{% endfor %}
+
+<div class="divider"></div>
+<a class="btn" href="{{ url_for('project.overview', exam_id=exam.id) }}">Back to project viva</a>
+{% endblock %}

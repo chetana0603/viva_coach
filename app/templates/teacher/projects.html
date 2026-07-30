@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Project submissions</h1>
+<p class="caption">Every project report uploaded, its extracted concepts, generated pool,
+and the student's viva result.</p>
+
+<table class="df">
+  <thead><tr><th>Student</th><th>Project</th><th>Status</th><th>Concepts</th>
+             <th>Pool</th><th>Test</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.sub.user.register_number }}<br><span class="caption">{{ r.sub.user.full_name }}</span></td>
+      <td>{{ r.sub.title or '(untitled)' }}</td>
+      <td><span class="badge">{{ r.sub.status }}</span></td>
+      <td>{{ r.sub.concepts|length }}</td>
+      <td>{{ r.pool_count }}</td>
+      <td>
+        {% if r.attempt and r.attempt.status in ('submitted','expired') %}
+          <span class="badge badge-ok">{{ r.attempt.score }}%</span>
+          readiness {{ r.attempt.readiness_score }}
+        {% elif r.attempt %}<span class="badge badge-wait">{{ r.attempt.status }}</span>
+        {% else %}—{% endif %}
+      </td>
+      <td><a href="{{ url_for('teacher.project_detail', submission_id=r.sub.id) }}">Open</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7">No project submissions yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

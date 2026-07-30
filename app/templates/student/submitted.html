@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Test submitted</h1>
+{% if attempt.submission_reason == 'bank_exhausted' %}
+  <div class="alert alert-warning">
+    <span>⚠️</span>
+    <p>This test ended after {{ attempt.total_answered }} of {{ exam.question_count }}
+       questions because the question bank ran out of unused questions at the levels you
+       reached. Your answers were saved and scored; tell your teacher, as this is a
+       problem with the bank rather than with your attempt.</p>
+  </div>
+{% elif attempt.submission_reason == 'time_expired' %}
+  <div class="alert alert-warning"><span>⚠️</span><p>Time ran out, so your attempt was submitted automatically. Every answer you saved was recorded.</p></div>
+{% else %}
+  <div class="alert alert-success"><span>✅</span><p>Your answers are recorded. You can close this page.</p></div>
+{% endif %}
+
+<div class="metric-row">
+  <div class="metric"><div class="label">Answered</div><div class="value">{{ attempt.total_answered }}</div></div>
+  <div class="metric"><div class="label">Submitted at</div><div class="value" style="font-size:1rem">{{ attempt.submitted_at|ist }}</div></div>
+</div>
+
+{% if exam.show_result_immediately %}
+  <a class="btn btn-primary" href="{{ url_for('student.result', attempt_id=attempt.id) }}">View result</a>
+{% else %}
+  <div class="alert alert-info"><span>ℹ️</span><p>Results open after the exam window closes on {{ exam.exam_end|ist }}.</p></div>
+{% endif %}
+<a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endblock %}

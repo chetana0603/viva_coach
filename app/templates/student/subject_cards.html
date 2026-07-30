@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>📚 Study cards — {{ subject }}</h1>
+<p class="caption">Read these between your pre-test and post-test. Each card covers one
+concept: what it is, why it matters, and the mistake to avoid.</p>
+
+{% if not cards %}
+  <div class="alert alert-info"><span>ℹ️</span>
+    <p>No study cards for {{ subject }} yet — your teacher hasn't generated them.</p></div>
+{% endif %}
+
+{% for card in cards %}
+  <details class="expander">
+    <summary>📖 {{ card.concept_name }}</summary>
+    <div class="cols">
+      <div>
+        <h4>📖 Definition</h4><p>{{ card.definition }}</p>
+        <h4>🎯 Purpose</h4><p>{{ card.purpose }}</p>
+        <h4>📍 Where it's used</h4><p>{{ card.where_used }}</p>
+      </div>
+      <div>
+        <h4>🗣️ How to answer in a viva</h4>
+        <div class="alert alert-success"><span>✅</span><p>{{ card.recommended_answer }}</p></div>
+        <h4>⚠️ Common misconception</h4>
+        <div class="alert alert-warning"><span>⚠️</span><p>{{ card.misconception }}</p></div>
+      </div>
+    </div>
+    {% if card.revision_points %}
+      <h4>⚡ Quick revision</h4>
+      <ul>{% for p in card.revision_points %}<li>{{ p }}</li>{% endfor %}</ul>
+    {% endif %}
+  </details>
+{% endfor %}
+
+<div class="divider"></div>
+<a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endblock %}

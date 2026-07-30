@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1>Students &amp; accounts</h1>
+
+<h3>Import eligible students</h3>
+<p class="caption">CSV columns: register_number, full_name, email, department, section.
+   Only register numbers on this list can create an account.</p>
+<form method="post" action="{{ url_for('teacher.import_students') }}" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="file" name="roster" accept=".csv">
+  <p><button class="btn btn-primary">Import roster</button></p>
+</form>
+
+<div class="divider"></div>
+<h3>Accounts waiting for approval ({{ pending|length }})</h3>
+<table class="df">
+  <thead><tr><th>Register number</th><th>Name</th><th>Email</th><th>Created</th><th>Action</th></tr></thead>
+  <tbody>
+  {% for u in pending %}
+    <tr>
+      <td>{{ u.register_number }}</td><td>{{ u.full_name }}</td><td>{{ u.email }}</td>
+      <td>{{ u.created_at|ist }}</td>
+      <td>
+        <form method="post" action="{{ url_for('teacher.student_account_action', user_id=u.id, action='approve') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('teacher.student_account_action', user_id=u.id, action='reject') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">Reject</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">Nothing waiting.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="divider"></div>
+<h3>Active accounts ({{ active|length }})</h3>
+<table class="df">
+  <thead><tr><th>Register number</th><th>Name</th><th>Email</th><th>Last login</th><th>Action</th></tr></thead>
+  <tbody>
+  {% for u in active %}
+    <tr>
+      <td>{{ u.register_number }}</td><td>{{ u.full_name }}</td><td>{{ u.email }}</td>
+      <td>{{ u.last_login_at|ist }}</td>
+      <td>
+        <form method="post" action="{{ url_for('teacher.student_account_action', user_id=u.id, action='suspend') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">Suspend</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="divider"></div>
+<h3>Suspended or rejected ({{ inactive|length }})</h3>
+<p class="caption">Reactivating clears any login lockout as well.</p>
+<table class="df">
+  <thead><tr><th>Register number</th><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody>
+  {% for u in inactive %}
+    <tr>
+      <td>{{ u.register_number }}</td><td>{{ u.full_name }}</td><td>{{ u.email }}</td>
+      <td><span class="badge badge-bad">{{ u.account_status }}</span></td>
+      <td>
+        <form method="post" action="{{ url_for('teacher.student_account_action', user_id=u.id, action='approve') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary">Reactivate</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">None.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="divider"></div>
+<details class="expander">
+  <summary>Eligible list ({{ roster|length }} rows)</summary>
+  <table class="df">
+    <thead><tr><th>Register number</th><th>Name</th><th>Email</th><th>Claimed</th></tr></thead>
+    <tbody>
+    {% for r in roster %}
+      <tr><td>{{ r.register_number }}</td><td>{{ r.full_name }}</td><td>{{ r.email }}</td>
+          <td>{{ '✅' if r.claimed else '—' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% endblock %}

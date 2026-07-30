@@ -1,0 +1,4 @@
+register_number,full_name,email,department,section
+STUDY01,First Friend,friend1@gmail.com,CSE,A
+STUDY02,Second Friend,friend2@gmail.com,CSE,A
+STUDY03,Third Friend,friend3@gmail.com,CSE,A

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ exam.title }}</h1>
+<p class="caption">{{ exam.subject }} · {{ exam.question_count }} questions ·
+   {{ exam.duration_minutes }} minutes · one attempt</p>
+
+<div class="metric-row">
+  <div class="metric"><div class="label">Window opens</div><div class="value" style="font-size:1.05rem">{{ exam.exam_start|ist }}</div></div>
+  <div class="metric"><div class="label">Window closes</div><div class="value" style="font-size:1.05rem">{{ exam.exam_end|ist }}</div></div>
+</div>
+
+{% if exam.instructions %}
+<h3>Instructions</h3>
+<div class="alert alert-info"><span>ℹ️</span><p style="white-space:pre-line">{{ exam.instructions }}</p></div>
+{% endif %}
+
+{% if exam.is_project() and not project_ready %}
+  <div class="alert alert-warning">
+    <span>⚠️</span>
+    <p>This test is built from your own project. Submit your report, read your study cards,
+       and generate your questions first.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('project.overview', exam_id=exam.id) }}">
+    Go to project viva</a>
+{% elif access == 'CAN_START' %}
+  <div class="alert alert-success"><span>✅</span><p>{{ message }} Your timer starts the moment you begin and does not pause.</p></div>
+  <form method="post" action="{{ url_for('student.start_exam', exam_id=exam.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary">Start test</button>
+  </form>
+{% elif access == 'RESUME_ATTEMPT' %}
+  <div class="alert alert-warning"><span>⚠️</span><p>You have an attempt in progress. The timer has been running since you started.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('student.exam_page', attempt_id=attempt.id) }}">Resume test</a>
+{% elif access == 'ALREADY_SUBMITTED' %}
+  <div class="alert alert-info"><span>ℹ️</span><p>{{ message }}</p></div>
+  <a class="btn" href="{{ url_for('student.result', attempt_id=attempt.id) }}">View result</a>
+{% else %}
+  <div class="alert alert-warning"><span>⚠️</span><p>{{ message }}</p></div>
+{% endif %}
+
+<div class="divider"></div>
+<a class="btn" href="{{ url_for('student.dashboard') }}">Back to my exams</a>
+{% endblock %}
