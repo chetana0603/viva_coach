@@ -1,5 +1,5 @@
 """Bridges saved DB rows into the prototype's scoring module unchanged."""
-from app.core import scoring
+from app.core import ability, scoring
 from app.core.utils import clamp_level
 from app.extensions import db
 from app.models.integrity_event import IntegrityEvent
@@ -101,4 +101,11 @@ def score_attempt(attempt):
     report["score_percent"] = pts["primary_percent"]
     report["credited_percent"] = pts["credited_percent"]
     report["records"] = records
+
+    # Model-based ability (EAP, Rasch). Unlike level-based summaries, it is not
+    # distorted by the adaptive route or by remediation, and it uses remedial answers
+    # as evidence. Use `ability.theta` when comparing a pre-test with a post-test.
+    report["ability"] = ability.estimate_ability(records, include_remedial=True)
+    report["ability_primary_only"] = ability.estimate_ability(records, include_remedial=False)
+    report["highest_correct_level"] = ability.highest_correct_level(records)
     return report

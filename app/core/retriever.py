@@ -10,6 +10,7 @@ e.g. "Virtual Memory and Paging" also matches "page fault", "frame", "TLB".
 """
 
 import math
+import re
 from collections import Counter
 
 from app.core.text_processing import chunk_text, tokenize
@@ -32,6 +33,16 @@ EXPANSION = {
     "validation": ["input", "sanitize", "check", "form", "constraint"],
     "database": ["sql", "query", "table", "sqlite", "insert", "select"],
 }
+
+
+# Course-administration pages (outline, objectives, outcomes, textbooks, credits) list
+# every topic name, so they match every concept query without teaching any of them.
+_ADMIN = re.compile(r"Course (Outline|Objectives|Outcomes|Evaluation)|Text ?books?|"
+                    r"Reference Book|Acknowledg(e)?ment|\b\d+ Hours\b", re.I)
+
+
+def is_admin_chunk(chunk: str) -> bool:
+    return bool(_ADMIN.search(chunk or ""))
 
 
 def expand_query(concept: str):
@@ -95,6 +106,8 @@ def retrieve(concept: str, text: str = None, chunks=None, top_k: int = 4):
         score = _cosine(qvec, dvec)
         # Small keyword-overlap bonus so exact concept mentions rank higher
         overlap = len(set(query_tokens) & set(toks))
+        if is_admin_chunk(chunks[i]):
+            score *= 0.1          # keep as a last resort, never ahead of content
         scored.append((score + overlap * 0.01, i))
 
     scored.sort(reverse=True)
@@ -106,8 +119,15 @@ def retrieve(concept: str, text: str = None, chunks=None, top_k: int = 4):
     return selected
 
 
-def retrieve_context(concept: str, text: str = None, chunks=None, top_k: int = 4, max_chars: int = 2000):
-    """Convenience: retrieve chunks and join them into a single context string."""
+def retrieve_context(concept: str, text: str = None, chunks=None, top_k: int = 4, max_chars: int = None):
+    """
+    Convenience: retrieve chunks and join them into a single context string.
+
+    `max_chars` defaults to room for all `top_k` chunks. (It used to be 2000, which
+    silently cut 4 x 900-char chunks down to about two.)
+    """
+    if max_chars is None:
+        max_chars = top_k * 1000
     top = retrieve(concept, text=text, chunks=chunks, top_k=top_k)
     context = "\n\n---\n\n".join(top)
     return context[:max_chars]

@@ -48,7 +48,7 @@ def compute_readiness(records):
     avg_time = sum(times) / len(times) if times else 0.0
 
     raw = (0.55 * weighted_accuracy + 0.25 * accuracy + 0.20 * depth_factor) * 100
-    score = max(0, min(100, round(raw - integrity_penalty)))
+    score = max(0, min(100, round(raw)))
 
     if score >= 85:
         label = "Ready"

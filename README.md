@@ -9,6 +9,18 @@ Practice/Learn mode and for comparison.
 
 ---
 
+## Online demo
+
+The deployed app is available at:
+
+- https://viva-platform.onrender.com
+
+Test accounts:
+- Student: `student50-100@gmail.com` / `teststudy2026`
+- Teacher: `teacher1-5@gmail.com` / `testteacher2026`
+
+---
+
 ## What this version is
 
 Two modes, deliberately separated:

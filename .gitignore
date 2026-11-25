@@ -9,3 +9,12 @@ venv/
 .coverage
 htmlcov/
 deployment/certs/
+
+# Secrets: any .env variant (backups included), but keep the example
+.env.*
+!.env.example
+
+# Participant data - pseudonymous but not for a public repo without consent
+study_export/
+research/pilot/*.csv
+research/pilot/*results.json

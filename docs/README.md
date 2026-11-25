@@ -4,6 +4,11 @@ This folder contains the main project documentation for the Viva Platform.
 
 ## Available Guides
 - [Installation Guide](installation.md) — environment setup, dependencies, database initialization, and local run instructions.
+
+## Online Demo
+- Live app: https://viva-platform.onrender.com
+- Student test account: `student50-100@gmail.com` / `teststudy2026`
+- Teacher test account: `teacher1-5@gmail.com` / `testteacher2026`
 - [Architecture Guide](architecture.md) — system structure, modules, and data flow.
 - [User Guide](user-guide.md) — teacher and student workflows for exams, registrations, and project viva.
 - [Deployment Guide](deployment.md) — Docker, Render, and production deployment steps.

@@ -60,6 +60,31 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
+def strip_boilerplate(raw: str, min_repeat: int = 25) -> str:
+    """
+    Remove slide-deck template text before chunking.
+
+    Lecture notes exported from slides repeat the same header/footer on every page
+    ("Database Management Systems", department name, bullet glyphs, "THANK YOU").
+    Those lines match every query, so they pull irrelevant chunks (often the syllabus
+    page) into the generator's context. A line that occurs at least `min_repeat`
+    times is treated as template; bare page numbers are dropped too. Ordinary prose
+    rarely repeats a whole line that often, so short documents are unaffected.
+    """
+    if not raw:
+        return ""
+    lines = raw.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    counts = {}
+    for ln in lines:
+        s = ln.strip()
+        if s:
+            counts[s] = counts.get(s, 0) + 1
+    kept = [ln for ln in lines
+            if not (ln.strip() and counts.get(ln.strip(), 0) >= min_repeat)
+            and not re.fullmatch(r"\s*\d{1,4}\s*", ln)]
+    return "\n".join(kept)
+
+
 def split_sentences(text: str):
     """Very light sentence splitter used for descriptive-answer analysis."""
     text = normalize_text(text)

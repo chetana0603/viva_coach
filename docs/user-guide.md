@@ -1,5 +1,10 @@
 # User Guide
 
+## Online Demo Access
+- Live app: https://viva-platform.onrender.com
+- Student test account: `student50-100@gmail.com` / `teststudy2026`
+- Teacher test account: `teacher1-5@gmail.com` / `testteacher2026`
+
 ## Teacher Workflow
 
 ### 1. Create a Teacher Account

@@ -1,0 +1,56 @@
+{
+ "real_calibrated_levels": {
+  "delta=0.0": {
+   "primary_pct": -0.525,
+   "readiness_code": 0.697,
+   "highest_attempted": 0.184,
+   "highest_correct": 0.271,
+   "eap_all": -0.011
+  },
+  "delta=0.5": {
+   "primary_pct": 8.043,
+   "readiness_code": 9.103,
+   "highest_attempted": 0.524,
+   "highest_correct": 0.808,
+   "eap_all": 0.409
+  },
+  "false_positive_n16": {
+   "primary_pct": 0.017,
+   "readiness_code": 0.034,
+   "highest_attempted": 0.083,
+   "highest_correct": 0.111,
+   "eap_all": 0.018
+  },
+  "sim_pre": {
+   "primary_pct": 49.5,
+   "highest_attempted": 4.03
+  }
+ },
+ "well_spaced_levels_0.6": {
+  "delta=0.0": {
+   "primary_pct": -2.582,
+   "readiness_code": -1.0,
+   "highest_attempted": 0.189,
+   "highest_correct": 0.254,
+   "eap_all": -0.012
+  },
+  "delta=0.5": {
+   "primary_pct": 1.804,
+   "readiness_code": 4.105,
+   "highest_attempted": 0.524,
+   "highest_correct": 0.75,
+   "eap_all": 0.418
+  },
+  "false_positive_n16": {
+   "primary_pct": 0.0,
+   "readiness_code": 0.008,
+   "highest_attempted": 0.113,
+   "highest_correct": 0.143,
+   "eap_all": 0.021
+  },
+  "sim_pre": {
+   "primary_pct": 49.0,
+   "highest_attempted": 3.96
+  }
+ }
+}

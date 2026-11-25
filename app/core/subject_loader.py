@@ -10,7 +10,7 @@ subject_materials/os_notes.txt later and will be preferred automatically.
 
 import os
 
-from app.core.text_processing import normalize_text
+from app.core.text_processing import normalize_text, strip_boilerplate
 
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MATERIALS_DIR = os.environ.get(
@@ -77,14 +77,14 @@ def load_subject_notes(subject: str) -> str:
     if subject == "DBMS":
         path = os.path.join(MATERIALS_DIR, "dbms_notes.txt")
         raw = _read_file(path)
-        return normalize_text(raw)
+        return normalize_text(strip_boilerplate(raw))
 
     if subject == "OS":
         path = os.path.join(MATERIALS_DIR, "os_notes.txt")
         raw = _read_file(path)
         if not raw.strip():
             raw = _OS_AUTONOTES
-        return normalize_text(raw)
+        return normalize_text(strip_boilerplate(raw))
 
     return ""
 

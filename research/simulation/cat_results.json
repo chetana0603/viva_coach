@@ -1,0 +1,26 @@
+{
+  "staircase": {
+    "rmse": 0.44,
+    "bias": 0.003,
+    "corr": 0.897,
+    "mean_highest_level": 3.61
+  },
+  "staircase+remediation": {
+    "rmse": 0.369,
+    "bias": 0.005,
+    "corr": 0.929,
+    "mean_highest_level": 3.9
+  },
+  "eap_select": {
+    "rmse": 0.435,
+    "bias": 0.003,
+    "corr": 0.899,
+    "mean_highest_level": 3.18
+  },
+  "eap_select+remediation": {
+    "rmse": 0.363,
+    "bias": 0.003,
+    "corr": 0.931,
+    "mean_highest_level": 3.24
+  }
+}

@@ -6,7 +6,8 @@ MATERIAL = ("Normalization organizes tables to reduce redundancy and prevent ins
 
 def _base():
     return {"question": "Which problem does normalization mainly prevent in a database?",
-            "options": ["Data anomalies", "Slow internet", "Weak passwords", "UI bugs"],
+            "options": ["Data anomalies", "Slow database queries", "Weak database passwords",
+                        "Schema migration failures"],
             "answer": 0}
 
 
